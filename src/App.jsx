@@ -114,6 +114,8 @@ export default function App() {
         #root { min-height: 100vh; }
         
         .app-container {
+          display: flex;
+          flex-direction: column;
           padding-bottom: 80px;
         }
         .ActiveComponentWrapper {

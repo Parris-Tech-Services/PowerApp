@@ -48,8 +48,6 @@ export const getStyles = (C) => ({
     paddingBottom: 0,
     color: C.ink,
     transition: "background 0.3s, color 0.3s",
-    display: "flex",
-    flexDirection: "column",
   },
   header: {
     background: C.ink,
