@@ -25,7 +25,7 @@ const tabs = [
   { id: "prepare", label: "Prepare", icon: "prepare", component: PrepareTab },
   { id: "session", label: "Session", icon: "play", component: SessionTab },
   { id: "reflect", label: "Reflect", icon: "reflect", component: ReflectTab },
-  { id: "more", label: "More", icon: "settings", component: MoreTab },
+  { id: "more", label: "Settings", icon: "settings", component: MoreTab },
   { id: "covenant", label: "Covenant", component: CovenantTab, hidden: true },
   { id: "resources", label: "Resources", icon: "resources", component: ResourceDirectory, hidden: true },
   { id: "privacy", label: "Privacy", icon: "privacy", component: PrivacyTab, hidden: true },
