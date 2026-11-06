@@ -79,6 +79,59 @@ try {
   await page.getByRole("heading", { name: "Mutual Yes interests" }).waitFor();
   assert.ok(await page.getByText("Oral sex", { exact: true }).count() > 0, "Mutual Yes was not shown after both partners sealed answers");
 
+  // Settings-only Christian NSFW portal: independent unlock and adult confirmation.
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByRole("heading", { name: "Settings" }).waitFor();
+  await page.getByRole("button", { name: "Christian NSFW mode", exact: true }).click();
+  await page.getByRole("heading", { name: "Christian NSFW portal" }).waitFor();
+  await page.getByRole("heading", { name: "Unlock your private vault" }).waitFor();
+  await page.getByLabel("Vault passphrase").fill(TEST_SECRET);
+  await page.getByRole("button", { name: "Unlock", exact: true }).click();
+  await page.getByRole("heading", { name: "Christian NSFW mode · 18+" }).waitFor();
+  await page.getByRole("checkbox", { name: "I am 18 or older and choose to enter." }).check();
+  await page.getByRole("button", { name: "Enter Christian NSFW mode" }).click();
+  await page.getByRole("heading", { name: "Adult intimacy library" }).waitFor();
+  await page.getByRole("heading", { name: "Anal sex" }).waitFor();
+  await page.getByRole("heading", { name: "Oral sex" }).waitFor();
+  await page.getByRole("button", { name: "Our words", exact: true }).click();
+  await page.getByLabel("Private title").fill("Synthetic covenant note");
+  await page.getByLabel("Your words").fill("Synthetic note for privacy regression, not user data.");
+  const oldEncrypted = await page.evaluate((key) => localStorage.getItem(key), VAULT_KEY);
+  await page.getByRole("button", { name: "Save encrypted note" }).click();
+  await page.getByText("Synthetic note for privacy regression, not user data.", { exact: true }).waitFor();
+  await page.waitForFunction(([key, before]) => localStorage.getItem(key) !== before, [VAULT_KEY, oldEncrypted]);
+  const newEncrypted = await page.evaluate((key) => localStorage.getItem(key), VAULT_KEY);
+  assert.ok(!newEncrypted.includes("Synthetic note for privacy regression"), "Christian NSFW note leaked into localStorage plaintext.");
+
+  // Private route must not be stored as the last active unencrypted tab.
+  await page.reload({ waitUntil: "load" });
+  await page.getByRole("heading", { name: "Settings" }).waitFor();
+  assert.equal(await page.evaluate(() => localStorage.getItem("powerapp:activeTab")), "more");
+  await page.getByRole("button", { name: "Christian NSFW mode", exact: true }).click();
+  await page.getByRole("heading", { name: "Unlock your private vault" }).waitFor();
+  await page.getByLabel("Vault passphrase").fill(TEST_SECRET);
+  await page.getByRole("button", { name: "Unlock", exact: true }).click();
+  await page.getByRole("checkbox", { name: "I am 18 or older and choose to enter." }).check();
+  await page.getByRole("button", { name: "Enter Christian NSFW mode" }).click();
+  await page.getByRole("button", { name: "Our words", exact: true }).click();
+  await page.getByText("Synthetic note for privacy regression, not user data.", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "Scene planner", exact: true }).click();
+  await page.getByLabel("Plan title").fill("Synthetic scene plan");
+  await page.getByLabel("Hard limits and things to avoid").fill("No pressure");
+  await page.getByRole("button", { name: "Save encrypted plan" }).click();
+  await page.getByText("Synthetic scene plan", { exact: false }).first().waitFor();
+  await page.getByRole("button", { name: "Open stop-signal view" }).click();
+  await page.getByRole("dialog", { name: "Stop-signal view" }).getByText("STOP IMMEDIATELY").waitFor();
+  await page.getByRole("button", { name: "Close stop-signal view" }).click();
+  await page.keyboard.press("Escape");
+  await page.getByRole("heading", { name: "Unlock your private vault" }).waitFor();
+  await page.getByRole("button", { name: "Studio", exact: true }).click();
+  await page.getByRole("heading", { name: "Unlock your private vault" }).waitFor();
+  await page.getByLabel("Vault passphrase").fill(TEST_SECRET);
+  await page.getByRole("button", { name: "Unlock", exact: true }).click();
+  await page.getByRole("button", { name: "Journal", exact: true }).click();
+  await page.getByText(TEST_BODY, { exact: true }).waitFor();
+
   await page.getByRole("button", { name: "Privacy", exact: true }).click();
   acceptNextDialog = true;
   await page.getByRole("button", { name: "Delete vault on this device" }).click();
@@ -86,7 +139,7 @@ try {
   assert.equal(await page.evaluate((key) => localStorage.getItem(key), VAULT_KEY), null, "Deletion left encrypted data behind");
 
   assert.deepEqual(errors, [], "The browser reported page-level JavaScript errors");
-  console.log("PASS: mobile viewport, vault create/reload/unlock, encrypted journal persistence, sealed ballots, mutual consent matching and deletion.");
+  console.log("PASS: mobile viewport, studio + Christian NSFW Settings portal, privacy-preserving route, encrypted notes, old data preserved, stop signals, Escape lock, ballots, matching, deletion.");
 } finally {
   await context.close();
   await browser.close();
