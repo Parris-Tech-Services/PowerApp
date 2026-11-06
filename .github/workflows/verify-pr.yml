@@ -32,7 +32,7 @@ jobs:
       - name: Install Chromium browser for synthetic UI test
         run: |
           npm install --no-save playwright
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
       - name: Exercise mobile studio in a real browser
         run: |
           npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/powerapp-preview.log 2>&1 &

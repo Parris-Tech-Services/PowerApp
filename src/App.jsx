@@ -17,7 +17,7 @@ import FlowProgress from "./components/FlowProgress";
 import { clearAllLocal, getLocal, setLocal } from "./utils/storage";
 
 const tabs = [
-  { id: "studio", label: "Private Studio", icon: "reflect", component: IntimacyStudio },
+  { id: "studio", label: "Studio", icon: "reflect", component: IntimacyStudio },
   { id: "learn", label: "Learn", icon: "learn", component: LearnTab },
   { id: "connect", label: "Connect", icon: "connect", component: ConnectTab },
   { id: "inspire", label: "Inspire", icon: "inspire", component: InspireTab },
@@ -208,12 +208,9 @@ export default function App() {
         }
 
         @media (max-width: 500px) {
-          .main-nav .nav-label {
-            display: none;
-          }
-          .main-nav button {
-            padding: 14px 4px !important;
-          }
+          .main-nav { overflow-x: auto; scrollbar-width: none; }
+          .main-nav .nav-label { display: block; font-size: 9px !important; text-align: center; }
+          .main-nav button { padding: 10px 2px !important; min-width: 45px; }
         }
 
         @media (min-width: 1120px) {
@@ -317,6 +314,7 @@ export default function App() {
           {tabs.filter(t => !t.hidden).map(tab => (
             <button 
               key={tab.id} 
+              aria-label={tab.label}
               onClick={() => setActiveTab(tab.id)} 
               style={s.navBtn(activeTab === tab.id)}
               aria-current={activeTab === tab.id ? "page" : undefined}
