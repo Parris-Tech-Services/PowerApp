@@ -13,6 +13,7 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
   const keyRef = useRef(null);
   const dataRef = useRef(null);
   const saveQueue = useRef(Promise.resolve());
+  const deletingRef = useRef(false);
   const [data, setData] = useState(null);
   const [secret, setSecret] = useState("");
   const [verify, setVerify] = useState("");
@@ -40,7 +41,7 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
   const primary = { ...s.btn(), padding: "10px 18px" };
 
   const save = (next) => {
-    if (!keyRef.current || !recordRef.current) return;
+    if (deletingRef.current || !keyRef.current || !recordRef.current) return;
     const cleaned = safeAdultData(next);
     dataRef.current = cleaned;
     setData(cleaned);
@@ -120,6 +121,7 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
   };
   const deleteVault = async () => {
     if (!confirm("Permanently delete the encrypted adult vault on this device? This cannot be undone without an exported backup.")) return;
+    deletingRef.current = true;
     await saveQueue.current.catch(() => {});
     removeVaultRecord();
     recordRef.current = null;
@@ -130,8 +132,17 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
     setSecret("");
     setAdult(false);
     setError("");
+    deletingRef.current = false;
   };
   const activities = data ? [...ACTIVITY_LIBRARY, ...data.customActivities] : [];
+  const openBallot = (partner) => {
+    if (data.ready[partner]) {
+      if (!confirm("This partner has sealed their answers. To answer again, their existing choices must be erased and re-entered. Continue?")) return;
+      modify((prev) => ({ ...prev, votes: { ...prev.votes, [partner]: {} }, ready: { ...prev.ready, [partner]: false } }));
+    }
+    setBallot(partner);
+    setShowMatches(false);
+  };
 
   return (
     <div style={s.page} className="intimacy-studio">
@@ -217,8 +228,8 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
                 <div style={box}>
                   <p>{data.ready.A ? "Partner A: sealed" : "Partner A: not sealed"} · {data.ready.B ? "Partner B: sealed" : "Partner B: not sealed"}</p>
                   <div style={buttonRow}>
-                    <button type="button" onClick={() => { setBallot("A"); setShowMatches(false); }} style={primary}>Partner A — answer privately</button>
-                    <button type="button" onClick={() => { setBallot("B"); setShowMatches(false); }} style={primary}>Partner B — answer privately</button>
+                    <button type="button" onClick={() => openBallot("A")} style={primary}>Partner A — {data.ready.A ? "reset sealed answers" : "answer privately"}</button>
+                    <button type="button" onClick={() => openBallot("B")} style={primary}>Partner B — {data.ready.B ? "reset sealed answers" : "answer privately"}</button>
                   </div>
                   <button type="button" disabled={!data.ready.A || !data.ready.B} style={secondary} onClick={() => setShowMatches(!showMatches)}>{showMatches ? "Hide" : "Reveal"} mutual Yes matches</button>
                   {showMatches && data.ready.A && data.ready.B && <div style={{ marginTop: 16 }}>
@@ -230,7 +241,7 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
               ) : (
                 <div style={box}>
                   <h3>Partner {ballot}'s private turn</h3>
-                  <p className="muted">Please have the other partner look away. An answer can always be changed. Marking Done seals your turn in the interface, not with a separate password.</p>
+                  <p className="muted">Please have the other partner look away. An answer can always be changed. Marking Done hides your answers in this interface. To answer again, you must erase and re-enter them. It is not secured with a separate partner password.</p>
                   {activities.map((a) => <div key={a.id} style={{ padding: "12px 0", borderBottom: "1px solid " + C.rule }}>
                     <label htmlFor={"vote-" + a.id}>{a.title}</label>
                     <select id={"vote-" + a.id} style={{ ...s.input, margin: 0 }} value={data.votes[ballot][a.id] || ""} onChange={(e) => {
