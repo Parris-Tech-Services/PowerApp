@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { themes, getStyles } from "./constants";
 import { Icon } from "./components/Icon";
 import LearnTab from "./components/LearnTab";
+import IntimacyStudio from "./components/IntimacyStudio";
 import ConnectTab from "./components/ConnectTab";
 import InspireTab from "./components/InspireTab";
 import PrepareTab from "./components/PrepareTab";
@@ -16,6 +17,7 @@ import FlowProgress from "./components/FlowProgress";
 import { clearAllLocal, getLocal, setLocal } from "./utils/storage";
 
 const tabs = [
+  { id: "studio", label: "Private Studio", icon: "reflect", component: IntimacyStudio },
   { id: "learn", label: "Learn", icon: "learn", component: LearnTab },
   { id: "connect", label: "Connect", icon: "connect", component: ConnectTab },
   { id: "inspire", label: "Inspire", icon: "inspire", component: InspireTab },
@@ -29,7 +31,7 @@ const tabs = [
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState(() => getLocal("activeTab", "learn"));
+  const [activeTab, setActiveTab] = useState(() => getLocal("activeTab", "studio"));
   const [themeMode, setThemeMode] = useState(() => getLocal("themeMode", "light"));
   const [showOnboarding, setShowOnboarding] = useState(() => !getLocal("hasOnboarded", false));
   const [showSearch, setShowSearch] = useState(false);
@@ -62,6 +64,7 @@ export default function App() {
   // Real-time indexing of LearnTab content for search
   const searchItems = [
     ...tabs.filter(t => !t.hidden).map(tab => ({ tab: tab.id, title: tab.label, text: `${tab.label} section navigation` })),
+    { tab: "studio", title: "Private adult intimacy studio", text: "sexual wellbeing oral sex intercourse masturbation fantasies toys planner journal encrypted vault matching" },
     { tab: "learn", title: "Marriage never replaces consent", text: "consent silence freeze maybe not permission" },
     { tab: "learn", title: "Nervous System Safety", text: "freeze fawn dissociation shutdown overwhelm" },
     { tab: "learn", title: "Christian Reflection", text: "faith spiritual conscience fruits of the spirit" },
@@ -97,8 +100,7 @@ export default function App() {
     return (
       <>
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Lato:wght@300;400;700&display=swap');
-          body { margin: 0; background: ${C.cream}; }
+            body { margin: 0; background: ${C.cream}; }
         `}</style>
         <Onboarding C={C} s={s} onComplete={handleOnboardingComplete} />
       </>
@@ -108,7 +110,6 @@ export default function App() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Lato:wght@300;400;700&display=swap');
         * { box-sizing: border-box; }
         body { margin: 0; background: ${C.cream}; transition: background 0.3s; overflow-x: hidden; }
         #root { min-height: 100vh; }
@@ -173,6 +174,7 @@ export default function App() {
             transform: none !important;
             width: 120px !important;
             height: 100vh !important;
+            overflow-y: auto;
             flex-direction: column !important;
             border-top: none !important;
             border-right: 1px solid ${C.accent} !important;
@@ -228,7 +230,7 @@ export default function App() {
           <div className="header-inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div onClick={() => setShowOnboarding(true)} style={{ cursor: "pointer" }}>
               <h1 style={s.headerTitle}>PowerApp</h1>
-              <div style={s.headerSub}>Private · Educational · Safety-First</div>
+              <div style={s.headerSub}>Adults 18+ · Consent · Privacy</div>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button 
