@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import { font } from "../constants";
 import { clearAllLocal, removeLocal } from "../utils/storage";
 
 // Privacy and data management.
 // Clears localStorage keys used by worksheets, plans, debriefs, or the whole app.
 export default function PrivacyTab({ C, s }) {
-  const [confirmClear, setConfirmClear] = useState(false);
+
 
   const handlePanicClear = () => {
     if (confirm("This will instantly delete ALL saved data, notes, and plans. This cannot be undone. Proceed?")) {
@@ -30,13 +30,13 @@ export default function PrivacyTab({ C, s }) {
       <div style={s.card}>
         <span style={s.label}>Local-Only Storage</span>
         <p style={{ ...s.p, fontSize: 14, marginBottom: 12 }}>
-          All data you enter (notes, worksheet responses, plans) is stored <strong>only in your browser's local storage</strong>.
+          The new Private Studio vault encrypts journal entries, preferences, plans and check-ins before storing them locally. <strong>Older worksheets and plans remain unencrypted in browser storage</strong> until cleared using the controls below.
         </p>
         <ul style={{ color: C.softInk, paddingLeft: 18, lineHeight: 1.6, fontSize: 13 }}>
           <li>Nothing is ever sent to a server.</li>
           <li>We have no access to your data.</li>
           <li>No tracking or analytics are used.</li>
-          <li>Anyone with access to this device and browser may see saved notes or plans.</li>
+          <li>Someone with this device can read unencrypted legacy worksheets; access to the locked Studio vault additionally requires its passphrase.</li>
           <li>Private/incognito windows may delete saved data automatically.</li>
         </ul>
       </div>
@@ -56,7 +56,7 @@ export default function PrivacyTab({ C, s }) {
       <div style={s.warnBox}>
         <span style={{ ...s.label, color: C.warnBorder }}>Device Security</span>
         <p style={{ ...s.p, fontSize: 14, marginBottom: 0 }}>
-          Because data is stored in the browser, anyone with access to your device and this browser may be able to see your saved information.
+          Legacy worksheets are not encrypted. New Studio entries are AES-GCM encrypted while locked, but an unlocked vault, browser extensions or a compromised device can still expose them. The vault passphrase cannot be recovered. Panic Clear also deletes the encrypted vault.
         </p>
       </div>
 
@@ -92,7 +92,7 @@ export default function PrivacyTab({ C, s }) {
         </button>
         
         <p style={{ ...s.p, fontSize: 12, textAlign: "center", color: C.muted, marginBottom: 0 }}>
-          This will reset the app to its original state.
+          Panic Clear removes both the legacy data and the encrypted vault. Export a secure backup of the vault before deleting it if you want to keep those entries.
         </p>
       </div>
 
