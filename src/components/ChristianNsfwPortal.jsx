@@ -24,7 +24,8 @@ export default function ChristianNsfwPortal({ space, onChange, onLock, onBack, o
   const [card, setCard] = useState(0);
   const [note, setNote] = useState({ title: "", body: "", status: "private" });
   const [plan, setPlan] = useState({ title: "", date: dateString(), ideas: "", limits: "", aftercare: "" });
-  const [debrief, setDebrief] = useState({ date: dateString(), mood: "Connected", whatHelped: "", supportNeeded: "" });
+  const newDebrief = () => ({ date: dateString(), partner: "Together", mood: "Connected", activities: "", orgasmIntensity: "", pleasure: "", discomfort: "", whatHelped: "", supportNeeded: "" });
+  const [debrief, setDebrief] = useState(newDebrief);
   const [activeScene, setActiveScene] = useState(null);
   const [editingStop, setEditingStop] = useState(false);
   const [stopDraft, setStopDraft] = useState({ safeword: space.safeword, pauseSignal: space.pauseSignal });
@@ -183,16 +184,41 @@ export default function ChristianNsfwPortal({ space, onChange, onLock, onBack, o
         <>
           <h3 style={title}>Aftercare and emotional check-in</h3><Scripture />
           <p style={small}>Reconnection, gentleness and any delayed discomfort matter. You can record this even if nothing sexual happened.</p>
-          <form style={panel} onSubmit={(e) => { e.preventDefault(); add("debriefs", debrief); setDebrief({ date: dateString(), mood: "Connected", whatHelped: "", supportNeeded: "" }); }}>
+          <form style={panel} onSubmit={(e) => { e.preventDefault(); add("debriefs", debrief); setDebrief(newDebrief()); }}>
             <label htmlFor="cnsfw-debrief-date" style={label}>Date</label><input id="cnsfw-debrief-date" type="date" style={input} value={debrief.date} onChange={(e) => setDebrief({ ...debrief, date: e.target.value })} />
+            <label htmlFor="cnsfw-debrief-partner" style={label}>Who's reflecting?</label>
+            <select id="cnsfw-debrief-partner" style={input} value={debrief.partner} onChange={(e) => setDebrief({ ...debrief, partner: e.target.value })}><option>Together</option><option>Partner A</option><option>Partner B</option></select>
             <label htmlFor="cnsfw-debrief-mood" style={label}>How are you feeling?</label><select id="cnsfw-debrief-mood" style={input} value={debrief.mood} onChange={(e) => setDebrief({ ...debrief, mood: e.target.value })}>
               {["Connected", "Relaxed", "Tired", "Overwhelmed", "Uncertain", "Disconnected", "Other"].map((value) => <option key={value}>{value}</option>)}
             </select>
+            <label htmlFor="cnsfw-debrief-activities" style={label}>Acts, toys or dynamics you want to discuss (optional)</label>
+            <textarea id="cnsfw-debrief-activities" style={input} maxLength={4000} value={debrief.activities} onChange={(e) => setDebrief({ ...debrief, activities: e.target.value })} />
+            <p style={small}>These are reflections, not performance targets. An orgasm or sexual encounter is never required.</p>
+            {[
+              ["orgasmIntensity", "Orgasm intensity, if relevant"],
+              ["pleasure", "Overall pleasure and connection"],
+              ["discomfort", "Pain or discomfort — stop if something hurts"],
+            ].map(([field, heading]) => <div key={field}>
+              <label htmlFor={"cnsfw-debrief-" + field} style={label}>{heading} (optional)</label>
+              <select id={"cnsfw-debrief-" + field} style={input} value={debrief[field]} onChange={(e) => setDebrief({ ...debrief, [field]: e.target.value })}>
+                <option value="">Prefer not to record</option>
+                {Array.from({ length: 11 }, (_, i) => <option key={i} value={String(i)}>{i} / 10</option>)}
+              </select>
+            </div>)}
             <label htmlFor="cnsfw-debrief-helped" style={label}>What felt good, caring or reassuring?</label><textarea id="cnsfw-debrief-helped" style={input} maxLength={4000} value={debrief.whatHelped} onChange={(e) => setDebrief({ ...debrief, whatHelped: e.target.value })} />
             <label htmlFor="cnsfw-debrief-support" style={label}>What would help next time?</label><textarea id="cnsfw-debrief-support" style={input} maxLength={4000} value={debrief.supportNeeded} onChange={(e) => setDebrief({ ...debrief, supportNeeded: e.target.value })} />
             <button type="submit" style={primary}>Save encrypted reflection</button>
           </form>
-          {space.debriefs.map((item) => <article style={panel} key={item.id}><h3>{item.date} · {item.mood}</h3><p style={{ whiteSpace: "pre-wrap" }}>{item.whatHelped}</p><p style={{ whiteSpace: "pre-wrap" }}>{item.supportNeeded}</p><button type="button" onClick={() => remove("debriefs", item.id)} style={secondary}>Delete reflection</button></article>)}
+          {space.debriefs.map((item) => <article style={panel} key={item.id}>
+            <h3>{item.date} · {item.partner || "Together"} · {item.mood}</h3>
+            {item.activities && <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}><strong>Topics:</strong> {item.activities}</p>}
+            {[
+              ["Orgasm intensity", item.orgasmIntensity], ["Pleasure", item.pleasure], ["Discomfort", item.discomfort],
+            ].filter(([, score]) => score !== "").map(([heading, score]) => <p key={heading} style={small}>{heading}: {score} / 10</p>)}
+            <p style={{ whiteSpace: "pre-wrap" }}>{item.whatHelped}</p>
+            <p style={{ whiteSpace: "pre-wrap" }}>{item.supportNeeded}</p>
+            <button type="button" onClick={() => remove("debriefs", item.id)} style={secondary}>Delete reflection</button>
+          </article>)}
         </>
       )}
       {section === "Faith & privacy" && (
