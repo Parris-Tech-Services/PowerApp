@@ -37,7 +37,7 @@ try {
   await page.getByLabel("Confirm passphrase").fill(TEST_SECRET);
   await page.getByRole("button", { name: "Create encrypted vault" }).click();
   await page.getByRole("heading", { name: "Adult intimacy library" }).waitFor();
-  await page.getByRole("heading", { name: "Oral sex" }).waitFor();
+  await page.getByRole("heading", { name: "Oral sex", exact: true }).waitFor();
   await page.getByRole("heading", { name: "Sex toys" }).waitFor();
 
   await page.getByRole("button", { name: "Journal", exact: true }).click();
