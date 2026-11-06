@@ -3,6 +3,16 @@
 PowerApp is a private, safety-first React/Vite app for an adult married couple learning about beginner-level BDSM/kink through consent, communication, preparation, aftercare, reflection, and real-world support.
 
 
+## Christian NSFW Mode — Settings portal
+
+**Settings → Christian NSFW mode (18+)** opens a separate, private, adult-only screen. It shares the **existing PowerApp AES-256-GCM vault and passphrase**, with an age confirmation each time the portal is opened. The route is never persisted as a plaintext last-visited setting. Switching tabs, reloading, Escape, the lock button or hiding the browser locks access; returning requires unlocking again.
+
+The portal names mature sexual topics directly (oral sex, anal sex, masturbation, toys, consensual BDSM, fantasy, intimacy and health). It includes factual safety notes, clear avoidances for breath restriction and other dangerous practices, a conversation card deck, user-authored private notes, custom intimate plans and stop signals, aftercare, and optional Scripture reflections (Song of Songs, Proverbs 5, 1 Corinthians 7, Ephesians 5, Galatians 5). No graphic erotic text is generated; couples author their own content in encrypted fields.
+
+**Faith and consent:** No Bible verse creates a sexual obligation. Consent is specific, present, mutual and revocable. Christian interpretations vary; Bible references are offered as reflection rather than endorsement of any particular sexual practice.
+
+**Privacy scope:** This is a shared local vault, **not two partner accounts**. A “for partner” label is only a same-device shared-vault label, not secure messaging or cross-device delivery. Existing Studio data is not deleted or rewritten by opening the portal; the optional \`christian\` subdocument is added when a user saves new content. Legacy screens outside the encrypted Studio still store plaintext browser data.
+
 ## Adult Private Studio (November 2026)
 
 PowerApp now includes a dedicated **Private Studio** for adults (18+): a frank factual sexual-wellbeing library (including masturbation, oral sex, intercourse, toys, consensual roleplay and BDSM), a custom interest builder, mutual Yes/No/Maybe conversations, encrypted user-authored fantasy journal, evening planner, conversation prompts and intimacy check-ins. The optional Covenant section remains separate.
@@ -77,8 +87,8 @@ npm run build
 
 The app is configured for both Vercel and GitHub Pages.
 
-- Vercel: `https://power-app-delta.vercel.app/`
-- GitHub Pages: `https://joshuaparris-max.github.io/PowerApp/`
+- GitHub Pages (current production): `https://parris-tech-services.github.io/PowerApp/`
+- Vercel (may be behind Pages due deployment quota): `https://power-app-delta-three.vercel.app/`
 - Static beginner guide: `/beginners-guide.html`
 
 ## Australian Support Resources
