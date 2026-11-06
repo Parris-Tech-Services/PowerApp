@@ -1,0 +1,90 @@
+/**
+ * End-to-end, synthetic-only PowerApp smoke test.
+ * Requires npm install --no-save playwright && npx playwright install chromium.
+ * Do NOT use actual personal data, export screenshots or retain browser profiles.
+ */
+import assert from "node:assert/strict";
+import { chromium } from "playwright";
+
+const BASE_URL = process.env.SMOKE_URL || "http://127.0.0.1:4173/PowerApp/";
+const TEST_SECRET = "Synthetic-Test-Vault-Only-2026!";
+const TEST_TITLE = "Synthetic QA entry — safe to delete";
+const TEST_BODY = "Sample nonpersonal data for automated encryption testing.";
+const VAULT_KEY = "powerapp:adult-vault:v1";
+const browser = await chromium.launch({ headless: true });
+const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+const page = await context.newPage();
+const errors = [];
+page.on("pageerror", (error) => errors.push(error.message));
+let acceptNextDialog = false;
+page.on("dialog", async (dialog) => { if (acceptNextDialog) { acceptNextDialog = false; await dialog.accept(); } else { await dialog.dismiss(); } });
+
+try {
+  await page.addInitScript(() => {
+    localStorage.setItem("powerapp:hasOnboarded", "true");
+    localStorage.setItem("powerapp:activeTab", "studio");
+  });
+  const response = await page.goto(BASE_URL, { waitUntil: "load", timeout: 30000 });
+  assert.equal(response?.status(), 200, "Live preview returned an HTTP error");
+  await page.getByRole("heading", { name: "Our private intimacy studio" }).waitFor();
+  await page.getByRole("heading", { name: "Create a private vault" }).waitFor();
+
+  await page.getByRole("checkbox", { name: /I confirm I am at least 18/ }).check();
+  await page.getByLabel("Vault passphrase").fill(TEST_SECRET);
+  await page.getByLabel("Confirm passphrase").fill(TEST_SECRET);
+  await page.getByRole("button", { name: "Create encrypted vault" }).click();
+  await page.getByRole("heading", { name: "Adult intimacy library" }).waitFor();
+  await page.getByRole("heading", { name: "Oral sex" }).waitFor();
+  await page.getByRole("heading", { name: "Sex toys" }).waitFor();
+
+  await page.getByRole("button", { name: "Journal", exact: true }).click();
+  await page.getByLabel("Title", { exact: true }).fill(TEST_TITLE);
+  await page.getByLabel("Your own words").fill(TEST_BODY);
+  const originalCiphertext = await page.evaluate((key) => localStorage.getItem(key), VAULT_KEY);
+  await page.getByRole("button", { name: "Save encrypted entry" }).click();
+  await page.getByText(TEST_BODY, { exact: true }).waitFor();
+  await page.waitForFunction(([key, previous]) => {
+    const next = localStorage.getItem(key);
+    return next && next !== previous;
+  }, [VAULT_KEY, originalCiphertext], { timeout: 15000 });
+
+  const ciphertext = await page.evaluate((key) => localStorage.getItem(key), VAULT_KEY);
+  assert.ok(ciphertext?.includes("AES-256-GCM"), "Encrypted vault envelope is missing");
+  assert.ok(!ciphertext.includes(TEST_BODY), "Plaintext escaped into persisted browser storage");
+
+  await page.reload({ waitUntil: "load" });
+  await page.getByRole("heading", { name: "Unlock your private vault" }).waitFor();
+  assert.equal(await page.getByText(TEST_BODY, { exact: true }).count(), 0, "Vault remained visible after reload");
+  await page.getByLabel("Vault passphrase").fill(TEST_SECRET);
+  await page.getByRole("button", { name: "Unlock", exact: true }).click();
+  await page.getByRole("button", { name: "Journal", exact: true }).click();
+  await page.getByText(TEST_BODY, { exact: true }).waitFor();
+
+  await page.getByRole("button", { name: "Our choices", exact: true }).click();
+  await page.getByRole("button", { name: /Partner A — answer privately/ }).click();
+  await page.locator("#vote-oral").selectOption("yes");
+  await page.getByRole("button", { name: /Seal my answers/ }).click();
+  await page.getByText("Partner A: sealed").waitFor();
+  await page.getByRole("button", { name: /Partner A — reset sealed answers/ }).click();
+  await page.getByText("Partner A: sealed").waitFor();
+  assert.equal(await page.locator("#vote-oral").count(), 0, "Dismissed reset should not expose sealed ballot");
+
+  await page.getByRole("button", { name: /Partner B — answer privately/ }).click();
+  await page.locator("#vote-oral").selectOption("yes");
+  await page.getByRole("button", { name: /Seal my answers/ }).click();
+  await page.getByRole("button", { name: /Reveal mutual Yes matches/ }).click();
+  await page.getByRole("heading", { name: "Mutual Yes interests" }).waitFor();
+  assert.ok(await page.getByText("Oral sex", { exact: true }).count() > 0, "Mutual Yes was not shown after both partners sealed answers");
+
+  await page.getByRole("button", { name: "Privacy", exact: true }).click();
+  acceptNextDialog = true;
+  await page.getByRole("button", { name: "Delete vault on this device" }).click();
+  await page.getByRole("heading", { name: "Create a private vault" }).waitFor();
+  assert.equal(await page.evaluate((key) => localStorage.getItem(key), VAULT_KEY), null, "Deletion left encrypted data behind");
+
+  assert.deepEqual(errors, [], "The browser reported page-level JavaScript errors");
+  console.log("PASS: mobile viewport, vault create/reload/unlock, encrypted journal persistence, sealed ballots, mutual consent matching and deletion.");
+} finally {
+  await context.close();
+  await browser.close();
+}
