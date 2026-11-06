@@ -3,8 +3,7 @@ import { ACTIVITY_LIBRARY, CONVERSATION_CARDS, VOTE_OPTIONS, initialAdultData, m
 import { createEncryptedVault, encryptVaultData, parseVaultRecord, readVaultRecord, removeVaultRecord, saveVaultRecord, unlockEncryptedVault } from "../utils/adultVault";
 
 const id = () => crypto.randomUUID();
-const today = () => new Date().toISOString().slice(0, 10);
-const isYes = (value) => value === "yes";
+const today = () => { const date = new Date(); date.setMinutes(date.getMinutes() - date.getTimezoneOffset()); return date.toISOString().slice(0, 10); };
 const SECTIONS = ["Library", "Our choices", "Journal", "Planner", "Conversation", "Check-ins", "Privacy"];
 const CATEGORIES = ["All", ...new Set(ACTIVITY_LIBRARY.map((a) => a.category))];
 
@@ -27,9 +26,10 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
   const [ballot, setBallot] = useState(null);
   const [showMatches, setShowMatches] = useState(false);
   const [draft, setDraft] = useState({ title: "", body: "", tag: "Private reflection", shared: false });
+  const [editingId, setEditingId] = useState(null);
   const [activity, setActivity] = useState({ title: "", category: "Our ideas", note: "" });
   const [plan, setPlan] = useState({ date: today(), title: "", mood: "", agreed: "", boundaries: "", aftercare: "" });
-  const [checkin, setCheckin] = useState({ date: today(), connection: "3", desire: "3", mood: "Neutral", notes: "" });
+  const [checkin, setCheckin] = useState({ date: today(), connection: "3", desire: "3", satisfaction: "3", mood: "Neutral", notes: "" });
   const [cardIndex, setCardIndex] = useState(0);
   const fileRef = useRef(null);
 
@@ -118,8 +118,9 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
     } catch (err) { setError(err.message); }
     finally { event.target.value = ""; }
   };
-  const deleteVault = () => {
+  const deleteVault = async () => {
     if (!confirm("Permanently delete the encrypted adult vault on this device? This cannot be undone without an exported backup.")) return;
+    await saveQueue.current.catch(() => {});
     removeVaultRecord();
     recordRef.current = null;
     keyRef.current = null;
@@ -249,21 +250,22 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
               <form style={box} onSubmit={(e) => {
                 e.preventDefault();
                 if (!draft.title.trim() && !draft.body.trim()) return;
-                modify((prev) => ({ ...prev, journal: [{ id: id(), ...draft, created: new Date().toISOString() }, ...prev.journal] }));
+                modify((prev) => ({ ...prev, journal: editingId ? prev.journal.map((entry) => entry.id === editingId ? { ...entry, ...draft, updated: new Date().toISOString() } : entry) : [{ id: id(), ...draft, created: new Date().toISOString() }, ...prev.journal] }));
+                setEditingId(null);
                 setDraft({ title: "", body: "", tag: "Private reflection", shared: false });
               }}>
                 <label htmlFor="journal-title">Title</label><input id="journal-title" maxLength={140} style={s.input} value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="An idea to remember" />
                 <label htmlFor="journal-body">Your own words</label><textarea id="journal-body" style={{ ...s.input, minHeight: 150 }} maxLength={20000} value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} placeholder="Thoughts, fantasies, desires, questions or reflections…" />
                 <label htmlFor="journal-tag">Tag</label><select id="journal-tag" style={s.input} value={draft.tag} onChange={(e) => setDraft({ ...draft, tag: e.target.value })}><option>Private reflection</option><option>Fantasy</option><option>To discuss</option><option>Aftercare</option></select>
                 <label><input type="checkbox" checked={draft.shared} onChange={(e) => setDraft({ ...draft, shared: e.target.checked })} /> Mark as something I'd like to discuss</label>
-                <button type="submit" style={primary}>Save encrypted entry</button>
+                <button type="submit" style={primary}>{editingId ? "Save changes" : "Save encrypted entry"}</button>{editingId && <button type="button" style={{ ...secondary, marginLeft: 8 }} onClick={() => { setEditingId(null); setDraft({ title: "", body: "", tag: "Private reflection", shared: false }); }}>Cancel edit</button>}
               </form>
               {data.journal.map((entry) => <article key={entry.id} style={box}>
                 <p style={s.label}>{entry.tag} · {entry.created?.slice(0, 10)}</p>
                 <h3>{entry.title || "Untitled"}</h3>
                 <p style={{ ...s.p, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{entry.body}</p>
                 <label><input type="checkbox" checked={!!entry.shared} onChange={(e) => modify((prev) => ({ ...prev, journal: prev.journal.map((x) => x.id === entry.id ? { ...x, shared: e.target.checked } : x) }))} /> Mark to discuss</label>
-                <div style={buttonRow}><button style={secondary} onClick={() => { setDraft({ title: entry.title, body: entry.body, tag: entry.tag, shared: !!entry.shared }); modify((prev) => ({ ...prev, journal: prev.journal.filter((x) => x.id !== entry.id) })); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Edit entry</button>
+                <div style={buttonRow}><button style={secondary} onClick={() => { setDraft({ title: entry.title, body: entry.body, tag: entry.tag, shared: !!entry.shared }); setEditingId(entry.id); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Edit entry</button>
                 <button style={secondary} onClick={() => { if (confirm("Delete this entry?")) modify((prev) => ({ ...prev, journal: prev.journal.filter((x) => x.id !== entry.id) })); }}>Delete</button></div>
               </article>)}
             </>
@@ -305,13 +307,13 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
               <form style={box} onSubmit={(e) => { e.preventDefault(); modify((prev) => ({ ...prev, checkins: [{ ...checkin, id: id() }, ...prev.checkins] })); setCheckin({ date: today(), connection: "3", desire: "3", mood: "Neutral", notes: "" }); }}>
                 <label htmlFor="checkin-date">Date</label><input id="checkin-date" type="date" style={s.input} value={checkin.date} onChange={(e) => setCheckin({ ...checkin, date: e.target.value })} />
                 <label htmlFor="checkin-mood">How am I feeling?</label><select id="checkin-mood" style={s.input} value={checkin.mood} onChange={(e) => setCheckin({ ...checkin, mood: e.target.value })}>{["Relaxed", "Happy", "Neutral", "Tired", "Anxious", "Disconnected", "Other"].map((v) => <option key={v}>{v}</option>)}</select>
-                {[["connection", "Sense of connection today"], ["desire", "My current desire for intimacy"]].map(([field, label]) => <div key={field}>
+                {[["connection", "Sense of connection today"], ["desire", "My current desire for intimacy"], ["satisfaction", "How satisfied do I feel with our intimacy?"]].map(([field, label]) => <div key={field}>
                   <label htmlFor={"checkin-" + field}>{label} ({checkin[field]} / 5)</label><input id={"checkin-" + field} type="range" min="1" max="5" value={checkin[field]} onChange={(e) => setCheckin({ ...checkin, [field]: e.target.value })} style={{ width: "100%" }} />
                 </div>)}
                 <label htmlFor="checkin-notes">Reflection (optional)</label><textarea id="checkin-notes" style={s.input} maxLength={3000} value={checkin.notes} onChange={(e) => setCheckin({ ...checkin, notes: e.target.value })} />
                 <button type="submit" style={primary}>Save private check-in</button>
               </form>
-              {data.checkins.map((entry) => <article key={entry.id} style={box}><strong>{entry.date} · {entry.mood}</strong><p>Connection: {entry.connection}/5 · Desire: {entry.desire}/5</p><p style={{ whiteSpace: "pre-wrap" }}>{entry.notes}</p><button style={secondary} onClick={() => { if (confirm("Delete this check-in?")) modify((prev) => ({ ...prev, checkins: prev.checkins.filter((x) => x.id !== entry.id) })); }}>Delete</button></article>)}
+              {data.checkins.map((entry) => <article key={entry.id} style={box}><strong>{entry.date} · {entry.mood}</strong><p>Connection: {entry.connection}/5 · Desire: {entry.desire}/5 · Satisfaction: {entry.satisfaction || "—"}/5</p><p style={{ whiteSpace: "pre-wrap" }}>{entry.notes}</p><button style={secondary} onClick={() => { if (confirm("Delete this check-in?")) modify((prev) => ({ ...prev, checkins: prev.checkins.filter((x) => x.id !== entry.id) })); }}>Delete</button></article>)}
             </>
           )}
           {section === "Privacy" && (
