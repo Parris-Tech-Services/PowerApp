@@ -123,6 +123,16 @@ try {
   await page.getByRole("button", { name: "Open stop-signal view" }).click();
   await page.getByRole("dialog", { name: "Stop-signal view" }).getByText("STOP IMMEDIATELY").waitFor();
   await page.getByRole("button", { name: "Close stop-signal view" }).click();
+  await page.getByRole("button", { name: "Aftercare", exact: true }).click();
+  await page.getByLabel("Who's reflecting?").selectOption("Partner A");
+  await page.locator("#cnsfw-debrief-orgasmIntensity").selectOption("7");
+  await page.locator("#cnsfw-debrief-pleasure").selectOption("8");
+  await page.locator("#cnsfw-debrief-discomfort").selectOption("0");
+  await page.getByRole("button", { name: "Save encrypted reflection" }).click();
+  await page.getByText("Orgasm intensity: 7 / 10").waitFor();
+  await page.getByText("Pleasure: 8 / 10").waitFor();
+  await page.getByText("Discomfort: 0 / 10").waitFor();
+
   await page.keyboard.press("Escape");
   await page.getByRole("heading", { name: "Unlock your private vault" }).waitFor();
   await page.getByRole("button", { name: "Studio", exact: true }).click();
