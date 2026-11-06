@@ -1,3 +1,5 @@
+import { initialChristianSpace, normaliseChristianSpace } from "./christianNsfw.js";
+
 export const ACTIVITY_LIBRARY = [
   { id: "kissing", category: "Affection", title: "Kissing", note: "Talk about the kind of kissing, timing and affection each of you enjoys." },
   { id: "cuddling", category: "Affection", title: "Cuddling and closeness", note: "Intimacy can be meaningful without leading to sex." },
@@ -52,6 +54,7 @@ export function initialAdultData() {
     journal: [],
     plans: [],
     checkins: [],
+    christian: initialChristianSpace(),
   };
 }
 
@@ -77,5 +80,6 @@ export function safeAdultData(raw) {
     journal: list(raw.journal, 200),
     plans: list(raw.plans, 200),
     checkins: list(raw.checkins, 365),
+    christian: normaliseChristianSpace(raw.christian),
   };
 }
