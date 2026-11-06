@@ -16,7 +16,8 @@ const context = await browser.newContext({ viewport: { width: 390, height: 844 }
 const page = await context.newPage();
 const errors = [];
 page.on("pageerror", (error) => errors.push(error.message));
-page.on("dialog", async (dialog) => { await dialog.dismiss(); });
+let acceptNextDialog = false;
+page.on("dialog", async (dialog) => { if (acceptNextDialog) { acceptNextDialog = false; await dialog.accept(); } else { await dialog.dismiss(); } });
 
 try {
   await page.addInitScript(() => {
@@ -76,7 +77,7 @@ try {
   assert.ok(await page.getByText("Oral sex", { exact: true }).count() > 0, "Mutual Yes was not shown after both partners sealed answers");
 
   await page.getByRole("button", { name: "Privacy", exact: true }).click();
-  page.once("dialog", async (dialog) => { await dialog.accept(); });
+  acceptNextDialog = true;
   await page.getByRole("button", { name: "Delete vault on this device" }).click();
   await page.getByRole("heading", { name: "Create a private vault" }).waitFor();
   assert.equal(await page.evaluate((key) => localStorage.getItem(key), VAULT_KEY), null, "Deletion left encrypted data behind");
