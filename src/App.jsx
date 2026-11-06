@@ -18,6 +18,7 @@ import { clearAllLocal, getLocal, setLocal } from "./utils/storage";
 
 const tabs = [
   { id: "studio", label: "Studio", icon: "reflect", component: IntimacyStudio },
+  { id: "christian-nsfw", label: "Christian NSFW", component: IntimacyStudio, hidden: true },
   { id: "learn", label: "Learn", icon: "learn", component: LearnTab },
   { id: "connect", label: "Connect", icon: "connect", component: ConnectTab },
   { id: "inspire", label: "Inspire", icon: "inspire", component: InspireTab },
@@ -38,7 +39,8 @@ export default function App() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    setLocal("activeTab", activeTab);
+    // Do not disclose private-mode navigation in the unencrypted settings key.
+    setLocal("activeTab", activeTab === "christian-nsfw" ? "more" : activeTab);
   }, [activeTab]);
 
   useEffect(() => {
@@ -64,6 +66,7 @@ export default function App() {
   // Real-time indexing of LearnTab content for search
   const searchItems = [
     ...tabs.filter(t => !t.hidden).map(tab => ({ tab: tab.id, title: tab.label, text: `${tab.label} section navigation` })),
+    { tab: "more", title: "Christian NSFW settings portal", text: "adults-only private faith covenant marriage sexuality privacy" },
     { tab: "studio", title: "Private adult intimacy studio", text: "sexual wellbeing oral sex intercourse masturbation fantasies toys planner journal encrypted vault matching" },
     { tab: "learn", title: "Marriage never replaces consent", text: "consent silence freeze maybe not permission" },
     { tab: "learn", title: "Nervous System Safety", text: "freeze fawn dissociation shutdown overwhelm" },
@@ -288,7 +291,7 @@ export default function App() {
             </div>
           )}
           <div className="ActiveComponentWrapper">
-            <ActiveComponent C={C} s={s} onNavigate={setActiveTab} />
+            <ActiveComponent C={C} s={s} onNavigate={setActiveTab} portalOnly={activeTab === "christian-nsfw"} />
           </div>
         </div>
 
