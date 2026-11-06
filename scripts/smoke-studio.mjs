@@ -22,10 +22,13 @@ page.on("dialog", async (dialog) => { if (acceptNextDialog) { acceptNextDialog =
 try {
   await page.addInitScript(() => {
     localStorage.setItem("powerapp:hasOnboarded", "true");
-    localStorage.setItem("powerapp:activeTab", "studio");
+    localStorage.setItem("powerapp:activeTab", "learn");
   });
   const response = await page.goto(BASE_URL, { waitUntil: "load", timeout: 30000 });
   assert.equal(response?.status(), 200, "Live preview returned an HTTP error");
+  const studioButton = page.getByRole("button", { name: "Studio", exact: true });
+  assert.equal(await studioButton.locator(".nav-label").isVisible(), true, "Studio navigation label is hidden on a mobile screen.");
+  await studioButton.click();
   await page.getByRole("heading", { name: "Our private intimacy studio" }).waitFor();
   await page.getByRole("heading", { name: "Create a private vault" }).waitFor();
 
