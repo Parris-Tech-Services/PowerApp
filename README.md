@@ -2,6 +2,31 @@
 
 PowerApp is a private, safety-first React/Vite app for an adult married couple learning about beginner-level BDSM/kink through consent, communication, preparation, aftercare, reflection, and real-world support.
 
+
+## Adult Private Studio (November 2026)
+
+PowerApp now includes a dedicated **Private Studio** for adults (18+): a frank factual sexual-wellbeing library (including masturbation, oral sex, intercourse, toys, consensual roleplay and BDSM), a custom interest builder, mutual Yes/No/Maybe conversations, encrypted user-authored fantasy journal, evening planner, conversation prompts and intimacy check-ins. The optional Covenant section remains separate.
+
+### Local encrypted vault
+
+- New Studio notes, votes, plans and check-ins are encrypted in-browser with **AES-256-GCM** (random nonce per save), with **PBKDF2-SHA256 at 310,000 iterations** and a random salt deriving a non-extractable encryption key from your passphrase.
+- The passphrase is never uploaded; there is **no account, third-party analytics, backend sync or recovery service**. The site is a static publicly served program; its contents do not include any of your vault data. Every browser/device has its own encrypted storage.
+- You can export/import a JSON **encrypted backup**; store it privately and keep the passphrase. Losing the passphrase means losing access to the data.
+- The vault is **shared between people who know the passphrase**. Sealed Yes/No/Maybe ballots are hidden by the normal interface; they are not protected by separate partner credentials. Reopening a sealed ballot requires discarding its previous answers. No or Hard Limit never appears among mutual Yes matches.
+- **Existing** Connect, Prepare, Reflect and other legacy features still use **unencrypted browser localStorage**. The encrypted vault **does not automatically migrate them**, to avoid data loss. Clear their sensitive entries using the legacy Privacy controls if no longer needed.
+- Local encryption does not defend against malware, compromised devices, malicious browser extensions, screen captures, or someone viewing the vault while it is unlocked. Deleting browser data also deletes the vault. Panic Clear removes **both** legacy data and the vault.
+- The Studio is not a pornographic-content generator. It provides factual education and private fields for adults to write their own notes and fantasies.
+
+### Test and build
+
+```sh
+npm ci
+npm test
+npm run build
+```
+
+PR checks run tests and the Vite production build. When making a change that affects the saved vault format, test migration and encrypted backup restoration before merging.
+
 ## What It Is
 
 - A guided learning and conversation tool.
@@ -28,8 +53,8 @@ PowerApp is a private, safety-first React/Vite app for an adult married couple l
 
 ## Privacy Model
 
-- All sensitive data is stored only in this browser's `localStorage`.
-- No backend, analytics, tracking, or external API calls are used.
+- New Private Studio data is stored as AES-GCM ciphertext in browser `localStorage`; **older screens still store unencrypted data**.
+- No backend, analytics, tracking, or external API calls are used. The formerly embedded third-party network script was removed.
 - Anyone with device/browser access may see saved notes, worksheets, plans, or debriefs.
 - Use Panic Clear before lending or sharing a device.
 - Private/incognito browsing may delete saved data automatically.
