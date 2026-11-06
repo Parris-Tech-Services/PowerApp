@@ -149,6 +149,6 @@ export function normaliseChristianSpace(value) {
     pauseSignal: clipped(value.pauseSignal, 50, "Yellow") || "Yellow",
     privateNotes: keep(value.privateNotes, [["title", 140], ["body", 20000], ["date", 30], ["status", 20]], 150),
     scenePlans: keep(value.scenePlans, [["title", 140], ["date", 30], ["ideas", 6000], ["limits", 4000], ["aftercare", 4000], ["safeword", 50], ["pauseSignal", 50]], 150),
-    debriefs: keep(value.debriefs, [["date", 30], ["mood", 100], ["whatHelped", 4000], ["supportNeeded", 4000]], 250),
+    debriefs: keep(value.debriefs, [["date", 30], ["partner", 30], ["mood", 100], ["activities", 4000], ["orgasmIntensity", 3], ["pleasure", 3], ["discomfort", 3], ["whatHelped", 4000], ["supportNeeded", 4000]], 250),
   };
 }
