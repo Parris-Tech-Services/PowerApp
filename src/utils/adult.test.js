@@ -34,6 +34,9 @@ async function run() {
   assert.equal(COVENANT_TOPICS.some((t) => t.title === "Anal sex"), true);
   assert.equal(COVENANT_TOPICS.some((t) => t.title === "Oral sex"), true);
   assert.equal(COVENANT_TOPICS.some((t) => t.risk === "critical"), true);
+  assert.ok(COVENANT_TOPICS.length >= 80, "The adult catalogue should include the expanded topics.");
+  assert.ok(COVENANT_TOPICS.some((t) => t.title === "Pegging"));
+  assert.ok(COVENANT_TOPICS.some((t) => t.title === "STI testing before fluid exchange"));
   assert.ok(COVENANT_REFERENCES.some((r) => r.reference.includes("Song of Songs")));
   assert.deepEqual(normaliseChristianSpace(null), initialAdultData().christian);
   const privateSpace = {
@@ -41,7 +44,7 @@ async function run() {
     showScripture: false, safeword: "Stop now",
     privateNotes: [{ id: "c-1", title: "Personal", body: "User's confidential notes", date: "2026-11-06", status: "private" }],
     scenePlans: [{ id: "plan-1", title: "Tonight", limits: "No pressure", aftercare: "Talk afterwards", date: "2026-11-06" }],
-    debriefs: [{ id: "deb-1", mood: "Connected", date: "2026-11-06" }],
+    debriefs: [{ id: "deb-1", partner: "Partner A", mood: "Connected", date: "2026-11-06", activities: "Sample notes", orgasmIntensity: "7", pleasure: "8", discomfort: "0" }],
   };
   const roundtrip = safeAdultData({ ...prior, christian: privateSpace });
   assert.equal(roundtrip.christian.showScripture, false);
@@ -49,6 +52,9 @@ async function run() {
   assert.equal(roundtrip.christian.privateNotes[0].body, "User's confidential notes");
   assert.equal(roundtrip.christian.scenePlans[0].title, "Tonight");
   assert.equal(roundtrip.christian.debriefs[0].mood, "Connected");
+  assert.equal(roundtrip.christian.debriefs[0].orgasmIntensity, "7");
+  assert.equal(roundtrip.christian.debriefs[0].pleasure, "8");
+  assert.equal(roundtrip.christian.debriefs[0].discomfort, "0");
   assert.equal(JSON.stringify(roundtrip).includes("Existing private note"), true);
   assert.equal(normaliseChristianSpace({ privateNotes: [{ body: "x" }], safeword: "" }).safeword, "Red");
 
