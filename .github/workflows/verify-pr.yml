@@ -29,6 +29,18 @@ jobs:
         run: npm test
       - name: Build production client
         run: npm run build
+      - name: Install Chromium browser for synthetic UI test
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Exercise mobile studio in a real browser
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/powerapp-preview.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/PowerApp/ >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/smoke-studio.mjs
       - name: Check compiled content for accidentally embedded example secrets
         run: |
           if grep -R -q "not for server logs" dist/; then
