@@ -3,8 +3,8 @@ import React from "react";
 export default function MoreTab({ C, s, onNavigate }) {
   return (
     <div style={s.page}>
-      <h1 style={s.h1}>More</h1>
-      <p style={s.p}>Crisis support, educational resources, and privacy settings.</p>
+      <h1 style={s.h1}>Settings</h1>
+      <p style={s.p}>Privacy controls, support resources and an optional private adult marriage portal.</p>
 
       <button onClick={() => onNavigate("resources")} style={{
         ...s.card, width: "100%", textAlign: "left", cursor: "pointer", border: `1px solid ${C.rule}`,
@@ -12,6 +12,15 @@ export default function MoreTab({ C, s, onNavigate }) {
       }}>
         <p style={{ fontFamily: s.h1.fontFamily, fontSize: 22, color: C.ink, marginBottom: 6 }}>Resources & Support</p>
         <p style={{ ...s.p, fontSize: 14, marginBottom: 0 }}>Australian and international resources, crisis hotlines, and books.</p>
+      </button>
+
+      <button aria-label="Christian NSFW mode" onClick={() => onNavigate("christian-nsfw")} style={{
+        ...s.card, width: "100%", textAlign: "left", cursor: "pointer",
+        border: "1px solid #9e647f", marginBottom: 16, display: "block",
+        background: C.warmWhite
+      }}>
+        <p style={{ fontFamily: s.h1.fontFamily, fontSize: 23, color: C.ink, marginBottom: 6 }}>Christian NSFW mode (18+)</p>
+        <p style={{ ...s.p, fontSize: 14, marginBottom: 0 }}>Enter a passphrase-locked marriage portal with frank adult topics, private notes, intimacy planning, scripture reflections and aftercare.</p>
       </button>
 
       <button onClick={() => onNavigate("privacy")} style={{
