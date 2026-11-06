@@ -92,7 +92,7 @@ try {
   await page.getByRole("button", { name: "Enter Christian NSFW mode" }).click();
   await page.getByRole("heading", { name: "Adult intimacy library" }).waitFor();
   await page.getByRole("heading", { name: "Anal sex" }).waitFor();
-  await page.getByRole("heading", { name: "Oral sex" }).waitFor();
+  await page.getByRole("heading", { name: "Oral sex", exact: true }).waitFor();
   await page.getByRole("button", { name: "Our words", exact: true }).click();
   await page.getByLabel("Private title").fill("Synthetic covenant note");
   await page.getByLabel("Your words").fill("Synthetic note for privacy regression, not user data.");
