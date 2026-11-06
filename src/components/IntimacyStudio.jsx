@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import ChristianNsfwPortal from "./ChristianNsfwPortal";
 import { ACTIVITY_LIBRARY, CONVERSATION_CARDS, VOTE_OPTIONS, initialAdultData, mutualYes, safeAdultData } from "../data/adult";
 import { createEncryptedVault, encryptVaultData, parseVaultRecord, readVaultRecord, removeVaultRecord, saveVaultRecord, unlockEncryptedVault } from "../utils/adultVault";
 
@@ -7,7 +8,7 @@ const today = () => { const date = new Date(); date.setMinutes(date.getMinutes()
 const SECTIONS = ["Library", "Our choices", "Journal", "Planner", "Conversation", "Check-ins", "Privacy"];
 const CATEGORIES = ["All", ...new Set(ACTIVITY_LIBRARY.map((a) => a.category))];
 
-export default function IntimacyStudio({ C, s, onNavigate }) {
+export default function IntimacyStudio({ C, s, onNavigate, portalOnly = false }) {
   const [record, setRecord] = useState(() => { try { return readVaultRecord(); } catch { return "corrupt"; } });
   const recordRef = useRef(record);
   const keyRef = useRef(null);
@@ -134,6 +135,15 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
     setError("");
     deletingRef.current = false;
   };
+  useEffect(() => {
+    if (!portalOnly || !data) return undefined;
+    const escapeLock = (event) => {
+      if (event.key === "Escape") { event.preventDefault(); void lock(); }
+    };
+    window.addEventListener("keydown", escapeLock);
+    return () => window.removeEventListener("keydown", escapeLock);
+  }, [portalOnly, data]);
+
   const activities = data ? [...ACTIVITY_LIBRARY, ...data.customActivities] : [];
   const openBallot = (partner) => {
     if (data.ready[partner]) {
@@ -150,8 +160,8 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
       </style>
       <div style={{ margin: "0 0 22px", padding: "22px 20px", borderRadius: 18, background: "linear-gradient(125deg,#4b2032,#301b29)", color: "#fff7f1" }}>
         <p style={{ margin: 0, letterSpacing: 3, textTransform: "uppercase", fontSize: 11, color: "#e9c9bb" }}>For consenting adults · 18+</p>
-        <h1 style={{ fontSize: "clamp(30px,6vw,42px)", fontFamily: "Georgia,serif", margin: "8px 0 10px" }}>Our private intimacy studio</h1>
-        <p style={{ lineHeight: 1.65, margin: 0, maxWidth: 660 }}>An open, sex-positive space to learn, share preferences, talk about fantasies, and care for your relationship — without any pressure to do more.</p>
+        <h1 style={{ fontSize: "clamp(30px,6vw,42px)", fontFamily: "Georgia,serif", margin: "8px 0 10px" }}>{portalOnly ? "Christian NSFW portal" : "Our private intimacy studio"}</h1>
+        <p style={{ lineHeight: 1.65, margin: 0, maxWidth: 660 }}>{portalOnly ? "A separate adults-only Christian marriage space, protected by the same encrypted local vault." : "An open, sex-positive space to learn, share preferences, talk about fantasies, and care for your relationship — without any pressure to do more."}</p>
       </div>
       {error && <div role="alert" style={s.warnBox}>{error}</div>}
       {!data ? (
@@ -178,6 +188,14 @@ export default function IntimacyStudio({ C, s, onNavigate }) {
           <input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={importBackup} />
           <p className="muted">Important: There is no password recovery. Keep an encrypted backup somewhere safe. Older PowerApp worksheets remain unencrypted in legacy browser storage until cleared from Privacy.</p>
         </div>
+      ) : portalOnly ? (
+        <ChristianNsfwPortal
+          space={data.christian}
+          onChange={(fn) => modify((prev) => ({ ...prev, christian: fn(prev.christian) }))}
+          onLock={lock}
+          onBack={() => { void lock().then(() => onNavigate("more")); }}
+          onStudio={() => { void lock().then(() => onNavigate("studio")); }}
+        />
       ) : (
         <>
           <div style={{ display: "flex", gap: 10, justifyContent: "space-between", flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
