@@ -22,7 +22,7 @@ page.on("dialog", async (dialog) => { if (acceptNextDialog) { acceptNextDialog =
 try {
   await page.addInitScript(() => {
     localStorage.setItem("powerapp:hasOnboarded", "true");
-    localStorage.setItem("powerapp:activeTab", "learn");
+    if (!localStorage.getItem("powerapp:activeTab")) localStorage.setItem("powerapp:activeTab", "learn");
   });
   const response = await page.goto(BASE_URL, { waitUntil: "load", timeout: 30000 });
   assert.equal(response?.status(), 200, "Live preview returned an HTTP error");
